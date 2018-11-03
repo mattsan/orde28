@@ -1,0 +1,4 @@
+%{
+  "ex_doukaku": {:git, "https://github.com/mattsan/ex_doukaku.git", "c5360e11812dc48f28b780af3a5978439ca144f1", []},
+  "poison": {:hex, :poison, "4.0.1", "bcb755a16fac91cad79bfe9fc3585bb07b9331e50cfe3420a24bcc2d735709ae", [:mix], [], "hexpm"},
+}

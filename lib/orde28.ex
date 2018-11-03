@@ -1,18 +1,11 @@
 defmodule Orde28 do
-  @moduledoc """
-  Documentation for Orde28.
-  """
+  use ExDoukaku.TestRunner
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> Orde28.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  def solve(input) do
+    input
   end
+
+  c_styled_test_data """
+  /* 0 */ test("abc", "abc");
+  """
 end
