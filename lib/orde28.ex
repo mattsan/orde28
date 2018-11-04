@@ -7,81 +7,91 @@ defmodule Orde28 do
     [building_str, room] =
       input |> String.split("/")
 
-    building =
+    extensions =
       Regex.scan(~r{[NEWS]|\d+}, building_str)
       |> List.flatten()
       |> Enum.chunk_every(2)
       |> Enum.map(fn [dir, size] ->
         {String.to_existing_atom(dir), String.to_integer(size)}
       end)
-    {building, String.to_integer(room)}
-  end
-
-  def room_position({x, y}, {w, h}, dir, unit, size, i) do
-    case dir do
-      :N -> {x * size + i * size,     y * size - size}
-      :E -> {x * size + w,            y * size + i * size}
-      :W -> {x * size,                y * size + i * size}
-      :S -> {x * size + h + i * size, y * size - size}
-    end
+    {extensions, String.to_integer(room)}
   end
 
   def solve(input) do
-    {building, room_number} =
+    {extensions, room_number} =
       input
       |> split()
 
-    env = %{
-      unit: 1,
-      corner: {0, 0},
-      size: {1, 1},
-      rooms: %{1 => {0, 0}},
-      last_room_number: 1
+    initial_env = %{
+      rooms: [
+        {0, 0, 1, 1}
+      ]
     }
 
-    building
-    |> Enum.reduce(env, fn {dir, size}, acc ->
-      next_unit = acc.unit * size
-      rooms0 =
-        1..(acc.last_room_number)
-        |> Enum.reduce(%{}, fn n, rooms ->
-          {x, y} = IO.inspect(Map.get(acc.rooms, n))
-          Map.put(rooms, n, {x * size, y * size})
-        end)
+    result =
+      extensions
+      |> Enum.reduce(initial_env, fn {dir, count}, env ->
 
-      next_rooms =
-        1..size
-        |> Enum.reduce(rooms0, fn i, rooms ->
-          Map.put(rooms, acc.last_room_number + i, room_position(acc.corner, acc.size, dir, acc.unit, size, i - 1))
-        end)
+        extended_rooms =
+          env.rooms
+          |> Enum.map(fn {x1, y1, x2, y2} ->
+            {x1 * count, y1 * count, x2 * count, y2 * count}
+          end)
 
-      {x, y} = acc.corner
-      next_corner =
-        case dir do
-          :N -> {x, y - acc.unit * size}
-          :E -> {x, y}
-          :W -> {x - acc.unit * size, y}
-          :S -> {x, y}
-        end
+        {min_x, min_y, max_x, max_y} =
+          extended_rooms
+          |> Enum.reduce(fn {x1, y1, x2, y2}, {b_x1, b_y1, b_x2, b_y2} ->
+            {min(x1, b_x1), min(y1, b_y1), max(x2, b_x2), max(y2, b_y2)}
+          end)
 
-      {w, h} = acc.size
-      next_size =
-        case dir do
-          :N -> {w,            h + acc.unit}
-          :E -> {w + acc.unit, h}
-          :W -> {w + acc.unit, h}
-          :S -> {w,            h + acc.unit}
-        end
+        width = max_x - min_x
+        height = max_y - min_y
+        room_size =
+          case dir do
+            :N -> div(width, count)
+            :S -> div(width, count)
+            :E -> div(height, count)
+            :W -> div(height, count)
+          end
 
-      %{acc |
-        unit: next_unit,
-        corner: next_corner,
-        size: next_size,
-        rooms: next_rooms,
-        last_room_number: acc.last_room_number + size
-      }
-    end)
-    |> inspect()
+        rooms =
+          1..count
+          |> Enum.reduce(extended_rooms, fn i, rooms ->
+            {x, y} =
+              case dir do
+                :N -> {min_x + (i - 1) * room_size, min_y - room_size}
+                :S -> {min_x + (i - 1) * room_size, max_y}
+                :E -> {max_x,                       min_y + (i - 1) * room_size}
+                :W -> {min_x - room_size,           min_y + (i - 1) * room_size}
+              end
+            [{x, y, x + room_size, y + room_size} | rooms]
+          end)
+
+        %{
+          rooms: rooms
+        }
+      end)
+
+    rooms =
+      result.rooms
+      |> Enum.reverse()
+      |> Enum.with_index(1)
+
+    {{room_x1, room_y1, room_x2, room_y2}, _} = rooms |> Enum.find(& elem(&1, 1) == room_number)
+
+    neighbors =
+      rooms
+      |> Enum.filter(fn
+        {{^room_x2, y1, _, y2}, _} when room_y1 < y2 and y1 < room_y2 -> true
+        {{x1, ^room_y2, x2, _}, _} when room_x1 < x2 and x1 < room_x2 -> true
+        {{_, y1, ^room_x1, y2}, _} when room_y1 < y2 and y1 < room_y2 -> true
+        {{x1, _, x2, ^room_y1}, _} when room_x1 < x2 and x1 < room_x2 -> true
+        _ -> false
+      end)
+
+    neighbors
+    |> Enum.map(&elem(&1, 1))
+    |> Enum.join(",")
   end
 
   c_styled_test_data """
