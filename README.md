@@ -1,21 +1,35 @@
 # Orde28
 
-**TODO: Add description**
+[横浜へなちょこプログラミング勉強会](https://yhpg.doorkeeper.jp) の [オフラインリアルタイムどう書くE28](https://yhpg.doorkeeper.jp/events/81346) で出題された [増築の果ての隣室 2018.11.3](http://nabetani.sakura.ne.jp/hena/orde28sqst/) を Elixir で解きました。
 
-## Installation
+## 実行方法
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `orde28` to your list of dependencies in `mix.exs`:
+リポジトリを clone します。
 
-```elixir
-def deps do
-  [
-    {:orde28, "~> 0.1.0"}
-  ]
-end
+```
+$ git clone git@github.com:mattsan/orde28.git
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/orde28](https://hexdocs.pm/orde28).
+依存しているパッケージを取得してコンパイルします。
 
+```
+$ mix do deps.get, deps.compile
+```
+
+[どう書くテストランナ](https://github.com/mattsan/ex_doukaku) のコマンドでテストを実行します。
+
+```
+$ mix doukaku.test
+```
+
+特定のテストケースを実行する場合は `-n` オプションで指定します。
+
+```
+$ mix doukaku.test -n 1,2,3 # テストケース 1, 2, 3 を実行する
+```
+
+コンマで区切る場合は番号やコンマの間にスペースなどを入れる場合は引用符でくくってください。
+
+```
+$ mix doukaku.test -n '1, 2, 3'
+```
